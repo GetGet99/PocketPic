@@ -6,7 +6,7 @@ namespace PicPicker;
     using DesktopFlyouts;
     <root IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom>
         <DesktopFlyoutIsland>
-            <GalleryPage Margin=8 MaxWidth=650 MaxHeight=480 />
+            gallery = <GalleryPage Margin=8 MaxWidth=650 MaxHeight=480 />
         </DesktopFlyoutIsland>
     </root>
     """)]
@@ -16,5 +16,7 @@ partial class TopBarIsland : DesktopFlyout
     {
         InitializeComponent();
         Init();
+        gallery.HideParentRequested += () => Hide();
+        gallery.ShowParentRequested += () => Show();
     }
 }

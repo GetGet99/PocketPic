@@ -7,7 +7,6 @@ namespace PicPicker;
 
 [QuickMarkup("""
     string SearchQuery;
-    string NewImageName;
 
     <setup>
         var theme = ThemeBrushes.Global;
@@ -27,15 +26,7 @@ namespace PicPicker;
                     @TextChanged+=`ApplyFilter()`
                 />
                 <Button Grid.Column=1 Content="+"
-                    Flyout=AddImageFlyout=<Flyout>
-                        <StackPanel Spacing=8 Padding=12>
-                            <TextBlock Text="Name the image from clipboard:" />
-                            <TextBox Text<=>`NewImageName` PlaceholderText="Image name" />
-                            <Button Content="Save"
-                                @Click+=`OnSaveClipboardImage()` />
-                        </StackPanel>
-                    </Flyout>
-                />
+                    @Click+=`OnAddImageClick()` />
             </Grid>
             
             <ScrollViewer Grid.Row=1>
@@ -52,6 +43,8 @@ namespace PicPicker;
 public partial class GalleryPage : Grid
 {
     public event Action? Completed;
+    public event Action? HideParentRequested;
+    public event Action? ShowParentRequested;
     ObservableCollection<string> ImageFiles = new();
     ObservableCollection<string> FilteredImages = new();
     string ImageDirectory => (string)ApplicationData.Current.LocalSettings.Values["ImageDirectory"];
@@ -86,34 +79,35 @@ public partial class GalleryPage : Grid
         }
     }
 
-    async void OnSaveClipboardImage()
+    async void OnAddImageClick()
     {
         try
         {
             var dataView = Clipboard.GetContent();
             if (!dataView.Contains(StandardDataFormats.Bitmap))
                 return;
-            if (string.IsNullOrWhiteSpace(NewImageName))
-                return;
 
             var streamRef = await dataView.GetBitmapAsync();
             using var stream = await streamRef.OpenReadAsync();
 
-            var fileName = NewImageName.Trim() + ".png";
-            var targetPath = Path.Combine(ImageDirectory, fileName);
-            var counter = 1;
-            while (File.Exists(targetPath))
+            using var memStream = new MemoryStream();
+            await stream.AsStream().CopyToAsync(memStream);
+            var imageData = memStream.ToArray();
+
+            HideParentRequested?.Invoke();
+
+            var flyout = new AddImageFlyout(imageData);
+            flyout.Completed += () =>
             {
-                targetPath = Path.Combine(ImageDirectory, $"{NewImageName.Trim()}_{counter}.png");
-                counter++;
+                ShowParentRequested?.Invoke();
+                LoadImages();
+            };
+            void r(object sender, RoutedEventArgs e)
+            {
+                flyout.Loaded -= r;
+                flyout.Show();
             }
-
-            using var fileStream = File.Create(targetPath);
-            await stream.AsStream().CopyToAsync(fileStream);
-
-            NewImageName = "";
-            LoadImages();
-            AddImageFlyout?.Hide();
+            flyout.Loaded += r;
         }
         catch { }
     }
