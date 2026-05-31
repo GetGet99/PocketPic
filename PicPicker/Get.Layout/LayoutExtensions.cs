@@ -14,6 +14,18 @@ public static class LayoutExtensions
         element.HorizontalAlignment = HorizontalAlignment.Center;
         return element;
     }
+    public static T StretchV<T>(this T element)
+        where T : FrameworkElement
+    {
+        element.VerticalAlignment = VerticalAlignment.Stretch;
+        return element;
+    }
+    public static T StretchH<T>(this T element)
+        where T : FrameworkElement
+    {
+        element.HorizontalAlignment = HorizontalAlignment.Stretch;
+        return element;
+    }
     public static T Top<T>(this T element) where T : FrameworkElement
     {
         element.VerticalAlignment = VerticalAlignment.Top;

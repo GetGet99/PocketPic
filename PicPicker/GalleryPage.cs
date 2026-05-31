@@ -23,7 +23,7 @@ namespace PicPicker;
                 <ColumnDefinition />
                 <ColumnDefinition Width=Auto />
             </>>
-                <TextBox PlaceholderText="Search images..." MinWidth=300
+                searchTb = <TextBox PlaceholderText="Search images..." MinWidth=300
                     Text<=>`SearchQuery`
                     @TextChanged+=`ApplyFilter()`
                 />
@@ -32,7 +32,7 @@ namespace PicPicker;
             </Grid>
             
             <ScrollViewer Grid.Row=1>
-                <VariableSizedWrapGrid Orientation=Horizontal>
+                <VariableSizedWrapGrid Orientation=Horizontal XYFocusKeyboardNavigation=Enabled>
                     foreach (var imagePath in `FilteredImages`; `imagePath`) {
                         <ImageDisplay ImagePath=`imagePath` @Completed+=`Completed?.Invoke()` @DeleteRequest+=`Delete(imagePath)` />
                     }
@@ -147,5 +147,9 @@ public partial class GalleryPage : Grid
             flyout.Loaded += r;
         }
         catch { }
+    }
+    public void FocusTextBox()
+    {
+        searchTb.Focus(FocusState.Programmatic);
     }
 }

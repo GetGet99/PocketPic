@@ -6,29 +6,69 @@ using Windows.Storage.Streams;
 namespace PicPicker;
 
 [QuickMarkup("""
+    using Windows.UI;
+    using Microsoft.UI;
     string ImagePath = "";
+    private Color ComputedTintColor => `(ThemeBrushes.Global.LayerFill as SolidColorBrush)?.Color ?? Colors.Red`;
+    private ImageSource? ImageSource => `
+        ImagePath is "" ? null :
+        new BitmapImage(new Uri(ImagePath, UriKind.Absolute)) { DecodePixelWidth = 200 }`;
+    private string FileName => `ImagePath is "" ? "" : System.IO.Path.GetFileName(ImagePath)`;
     <setup>
         var theme = ThemeBrushes.Global;
     </setup>
     <root>
-        <Border Margin=4 BorderBrush=`theme.CardStroke` BorderThickness=1 Width=200 MinHeight=100>
-            <Grid
-                @Tapped+=`CopyImageToClipboard(ImagePath)`
-                ContextFlyout=<MenuFlyout>
-                    <MenuFlyoutItem Icon=<SymbolIcon(Delete) /> Text="Delete" @Click+=`DeleteRequest?.Invoke()` />
-                </MenuFlyout>>
-                <Image Source=`ImagePath is "" ? null
-                    : new BitmapImage(new Uri(ImagePath, UriKind.Absolute)) { DecodePixelWidth = 200 }`
+        <Button
+            Margin=4
+            BorderBrush=`theme.CardStroke`
+            BorderThickness=1
+            Width=200 MinHeight=100
+            @Click+=`CopyImageToClipboard(ImagePath)`
+            Padding=0
+            ContextFlyout=<Flyout Placement=RightEdgeAlignedTop>
+                <ScrollViewer>
+                    <VStack Spacing=8>
+                        <Image Source=`ImageSource` Width=200 />
+                        <TextBlock Text=`FileName` MaxWidth=200 TextWrapping=WrapWholeWords />
+                        <VStack XYFocusKeyboardNavigation=Enabled>
+                            <ImageDisplayMenuItem
+                                Icon=Copy Text="Copy"
+                                @Click+=`CopyImageToClipboard(ImagePath)`
+                            />
+                            <ImageDisplayMenuItem
+                                Icon=Delete Text="Delete"
+                                CustomForeground=`theme.SystemCritical`
+                                @Click+=`DeleteRequest?.Invoke()`
+                            />
+                        </VStack>
+                    </VStack>
+                </ScrollViewer>
+            </Flyout>
+            //<MenuFlyout>
+            //    <MenuFlyoutItem Icon=<SymbolIcon(Delete) /> Text="Delete" @Click+=`DeleteRequest?.Invoke()` />
+            //</MenuFlyout>
+            AutomationProperties.Name="ImagePath"
+            AutomationProperties.AccessibilityView=Raw
+        >
+            <Grid>
+                <Image Source=`ImageSource`
                     Stretch=UniformToFill
                 />
-                <Border Bottom Background=`theme.LayerFill` Padding=4>
-                    <TextBlock Text=`ImagePath is "" ? "" : System.IO.Path.GetFileName(ImagePath)` Right
+                <Border Bottom Padding=4
+                    Background=<AcrylicBrush
+                        TintOpacity=0.5
+                        TintLuminosityOpacity=0.5
+                        TintColor=`ComputedTintColor`
+                        FallbackColor=`ComputedTintColor`
+                    />
+                >
+                    <TextBlock Text=`FileName` Right
                         Foreground=`theme.PrimaryText`
                         TextTrimming=WordEllipsis
                     />
                 </Border>
             </Grid>
-        </Border>
+        </Button>
     </root>
     """)]
 partial class ImageDisplay : IQuickMarkupComponent
@@ -61,5 +101,39 @@ partial class ImageDisplay : IQuickMarkupComponent
         {
             Debug.WriteLine(ex);
         }
+    }
+}
+[QuickMarkup("""
+    using Microsoft.UI;
+    Symbol Icon;
+    string Text = "";
+    Brush? CustomForeground = null;
+    <setup>
+        var theme = ThemeBrushes.Global;
+        var transparent = new SolidColorBrush(Colors.Transparent);
+    </setup>
+    <root>
+        btn = <Button StretchH HorizontalContentAlignment=Stretch
+            Background=`transparent`
+            BorderThickness=0
+        >
+            <HStack Spacing=8>
+                <SymbolIcon Symbol=`Icon` CenterV />
+                <TextBlock Text=`Text` CenterV />
+            </HStack>
+        </Button>
+    </root>
+    """)]
+partial class ImageDisplayMenuItem : IQuickMarkupComponent<Button>
+{
+    public ImageDisplayMenuItem()
+    {
+        Init();
+        CustomForegroundProp!.Watch((b) =>
+        {
+            btn.Foreground = b;
+            btn.Resources["ButtonForegroundPointerOver"] = b;
+            btn.Resources["ButtonForegroundPressed"] = b;
+        });
     }
 }

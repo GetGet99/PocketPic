@@ -34,7 +34,7 @@ public partial class App : Application
         );
         systemTrayIcon.Show();
         systemTrayIcon.LeftClicked += OnSystemTrayLeftClicked;
-
+        ApplicationData.Current.LocalSettings.Values.Remove("ImageDirectory");
         if (ApplicationData.Current.LocalSettings.Values.ContainsKey("ImageDirectory"))
         {
             topBarIsland = new();

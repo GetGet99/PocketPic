@@ -20,3 +20,4 @@ global using QuickMarkup.Infra;
 global using QuickMarkup.WinUI;
 global using QuickMarkup.SourceGen;
 global using Get.Layout;
+global using Microsoft.UI.Xaml.Automation;

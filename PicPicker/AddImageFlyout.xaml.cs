@@ -1,4 +1,5 @@
 using DesktopFlyouts;
+using Microsoft.UI.Xaml.Automation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
@@ -11,7 +12,9 @@ namespace PicPicker;
     bool CanSave => `!string.IsNullOrWhiteSpace(NewImageName) && NewImageExtension is { Length: > 1 } && NewImageExtension.StartsWith('.')`;
     ImageSource PreviewImage;
 
-    <root IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom>
+    <root IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom
+        ActivationMode=NoActivateOnOpen // we will do this manually
+    >
         <DesktopFlyoutIsland>
             <Grid ColumnDefinitions=<>
                 <ColumnDefinition Width=Auto />
