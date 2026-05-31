@@ -14,7 +14,7 @@ public static class Program
     public const string AppInstanceKey = "get-picpicker";
 
     [STAThread] // Must be single-threaded
-    static async Task Main(string[] args)
+    static void Main(string[] args)
     {
         // Initialize WinRT (required)
         WinRT.ComWrappersSupport.InitializeComWrappers();
@@ -42,22 +42,18 @@ public static class Program
             // ...redirect the activation to the main instance and exit.
             // This sends our activationArgs (e.g., the protocol URI) to the
             // 'OnAppActivated' handler in the main instance.
-            await mainInstance.RedirectActivationToAsync(activationArgs);
+            Task.WaitAll(mainInstance.RedirectActivationToAsync(activationArgs).AsTask());
             Environment.Exit(0);
         }
     }
 
     private static void StartApp(AppActivationArguments args)
     {
-        // This is the standard WinUI 3 startup code
-        Application.Start((p) =>
+        global::Microsoft.UI.Xaml.Application.Start((p) =>
         {
-            var context = new DispatcherQueueSynchronizationContext(
-                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
-            SynchronizationContext.SetSynchronizationContext(context);
-
-            // This is your standard App.xaml.cs class
-            _ = new App();
+            var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            global::System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+            new App();
         });
     }
 
