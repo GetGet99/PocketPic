@@ -12,6 +12,7 @@ public partial class App : Application
     private Window? _window;
     SystemTrayIcon systemTrayIcon = null!;
     TopBarIsland topBarIsland = null!;
+    InstructionTopBarIsland instruction = null!;
     DesktopFlyout? activeFlyout;
 
     public App()
@@ -42,6 +43,7 @@ public partial class App : Application
         else
         {
             var oobe = new OobeTopBarIsland();
+            instruction = new();
             oobe.Completed += OnOobeCompleted;
             activeFlyout = oobe;
             void r(object sender, RoutedEventArgs e)
@@ -65,7 +67,6 @@ public partial class App : Application
         ApplicationData.Current.LocalSettings.Values["ImageDirectory"] = path;
         activeFlyout?.Hide();
 
-        var instruction = new InstructionTopBarIsland();
         instruction.Completed += () =>
         {
             instruction.Hide();
