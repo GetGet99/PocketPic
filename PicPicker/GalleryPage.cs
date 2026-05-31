@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
 using Path = System.IO.Path;
 
 namespace PicPicker;
@@ -53,7 +54,7 @@ public partial class GalleryPage : Grid
     public event Action? Completed;
     ObservableCollection<string> ImageFiles = new();
     ObservableCollection<string> FilteredImages = new();
-    const string ImageDirectory = "D:\\PicPicker";
+    string ImageDirectory => (string)ApplicationData.Current.LocalSettings.Values["ImageDirectory"];
 
     void LoadImages()
     {

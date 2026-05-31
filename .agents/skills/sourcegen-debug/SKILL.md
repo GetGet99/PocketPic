@@ -1,6 +1,6 @@
 ---
 name: sourcegen-debug
-description: Debugging source generated files.
+description: Use this skill if something goes wrong with source generated files, or quickmarkup. Will tell you commands to debug them
 ---
 
 # Debugging C# Source Generators: Missing Generated Files
