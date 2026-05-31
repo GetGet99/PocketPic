@@ -1,0 +1,329 @@
+---
+name: quickmarkup
+description: Write and edit QuickMarkup declarative UI markup in C# projects. Use when the project uses QuickMarkup, identifiable by `using QuickMarkup.Infra`, `using QuickMarkup.SourceGen`, or `[QuickMarkup(...)]` attribute in .cs files.
+---
+
+# QuickMarkup
+
+QuickMarkup is a Vue-inspired declarative markup DSL embedded in C# that replaces XAML for UI declaration. It uses a **reactivity system** (not MVVM).
+
+## How It Works
+
+QuickMarkup code is placed inside a `[QuickMarkup("""...""")]` attribute on a `partial class`.
+
+```csharp
+[QuickMarkup("""
+    int Counter = 0;
+    <root>
+        <StackPanel>
+            <Button Text="Click Me" @Click+=`Counter++` />
+            <TextBlock Text=`$"You clicked {Counter} time(s)"` />
+        </StackPanel>
+    </root>
+    """)]
+partial class CounterPage : Page
+{
+    public CounterPage() { Init(); }
+}
+```
+
+A source generator processes the attribute. If the class has at least one user-defined constructor (including primary constructors and record syntax), it generates an `Init()` method the class must call (typically at the end of the constructor, after all other setup). If there are no constructors, it generates a public constructor automatically.
+
+## Sections (in order)
+
+1. **Usings** (optional) — namespace imports for the markup scope. Supports aliases (`using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;`) and `using static`. Global usings from C# files also apply.
+2. **Reference/Computed declarations** (optional) — reactive variable declarations.
+3. **`<setup>`** (optional) — C# code that runs before UI creation. Variables declared here are accessible in `<root>` but not exported outside.
+4. **`<root>`** — the UI tree. This is where the markup goes.
+
+## Reference Declarations
+
+Declaring variables outside `<setup>` creates reactive references. The generated code wraps them in `Reference<T>` with a property getter/setter.
+
+```
+double Value = 0;          // creates Reference<double>, property Value, backing field ValueProp
+double Output => `A + B`;  // creates Computed<double>, property Output, backing field OutputComp
+```
+
+References auto-notify the UI on change. Computed variables cache and re-evaluate when dependencies change.
+
+## Markup Syntax
+
+### Tags
+
+```
+<TypeName Property=Value>
+    <Child />
+</TypeName>
+<SelfClosing Property=Value />
+```
+
+Comments use `//` or `/* */`. **Not** `<!-- -->`.
+
+### Property Values
+
+Values are **not** quoted (unlike XML/XAML). Use raw values directly.
+
+| Kind | Syntax | Example |
+|------|--------|---------|
+| Integer | literal (dec/hex/binary) | `Width=100` / `Tag=0xDEADBEEF` / `Flags=0b101101` |
+| Double | literal | `FontSize=14.5` |
+| Boolean | literal | `IsChecked=true` |
+| Boolean true shorthand | property name alone | `IsEnabled` |
+| Boolean false shorthand | `!` prefix | `!IsHitTestVisible` |
+| String | double quotes | `Text="Hello"` |
+| Enum member | name alone | `HorizontalAlignment=Center` |
+| null/default | keyword | `Tag=null` / `Target=default` |
+| C# expression | backticks | `` Text=`$"Count: {Counter}"` `` |
+| Alternate C# literal (backward compatability legacy syntax of above) | `/-...-/` | `Source=/-new Uri("ms-appx:///icon.png")-/` |
+
+Note: It's not just "remove the quotes from regular XAML syntax." For example, things like `Height="Auto"`, `Height="3*"`, or `Height="*"` in grid row definitions, would have QuickMarkup equivalent of `` Height=`GridLength.Auto` ``, `` Height=`new GridLength(3, GridUnitType.Star)` ``, and `` Height=`new GridLength(1, GridUnitType.Star)` ``, and NOT `Height=Auto`, `Height=3*`, `Height=*` - these will make syntax error or do not work. Please consult the above tables for value types.
+
+### Automatic `new` (single-argument constructors)
+
+When you assign a **numeric or bool** literal to a property, the source generator may emit **`new PropertyType(literal)`** instead of the raw literal. That happens when the property type does not take the literal directly but exposes a **constructor with exactly one parameter** that does (`CodeTypeResolver.ShouldAutoNew`, `Binder.ValueOrAutoNew`).
+
+**Examples:** `CornerRadius=16` → `new CornerRadius(16)`; `BorderThickness=1` → `new Thickness(1)` when the uniform constructor applies.
+
+**Not covered:** multi-value `Thickness` / `CornerRadius` corners — use a backtick C# expression, e.g. `` Margin=`new(0,12,0,0)` ``. If assignment fails, use an explicit `` `new Thickness(...)` ``.
+
+### C# Expressions (backtick syntax)
+
+`` Property=`expression` `` — the expression re-evaluates automatically whenever any referenced reactive variable changes.
+
+### Binding Directions
+
+| Syntax | Direction | Example |
+|--------|-----------|---------|
+| `` =`expr` `` | One-way (source→UI) | `` Text=`Name` `` |
+| `` =>`var` `` | Bindback (UI→source) | `` SelectedValue=>`Choice` `` |
+| `` <=>`var` `` | Two-way | `` Value<=>`Amount` `` |
+
+You can combine one-way + bindback for preprocessing:
+
+```
+<NumberBox Value=`Math.Round(Val, 2)` Value=>`Val` />
+```
+
+### Events
+
+```
+Click+=`(sender, args) => DoSomething()`
+@Click+=`Counter++`                        // @ auto-wraps in delegate { ... }
+```
+
+### Variable Capture
+
+Assign a tag to a variable accessible from C# code-behind:
+
+```
+myButton = <Button Content="Click" />
+```
+
+The variable `myButton` becomes a field on the partial class, usable in code-behind methods.
+
+### Inline Tag as Property Value
+
+```
+<NumberBox NumberFormatter=<DecimalFormatter IntegerDigits=1 /> />
+```
+
+### Inline Collection Children
+
+Use `<>...</>` for collection-typed properties:
+
+```
+<Grid RowDefinitions=<>
+        <RowDefinition Height=`GridLength.Auto` />
+        <RowDefinition />
+    </>
+>
+```
+
+### Extension Method Callbacks
+
+An identifier that isn't a recognized property is called as an extension method on the element:
+
+```
+<StackPanel CenterH CenterV>
+```
+
+This calls `element.CenterH()` and `element.CenterV()`. Define these as extension methods in C#.
+
+### Lambda Callbacks
+
+A standalone backtick expression that is `Action<T>` runs once with the created element:
+
+```
+<Grid `x => Grid.SetRow(x, 1)` />
+```
+
+### Fragment Children
+
+A `{ ... }` block is a fragment. Contains any valid child nodes:
+
+```
+<StackPanel>
+    {
+        <TextBlock Text="A" />
+        <TextBlock Text="B" />
+    }
+</StackPanel>
+```
+
+### Conditional Children
+
+```
+if (`condition`) { <TextBlock Text="Visible" /> }
+else <TextBlock Text="Fallback" />
+```
+
+The `else` branch is required for single-child content positions (e.g., `Content`).
+
+### Foreach Loops
+
+```
+// Range (lower inclusive, upper exclusive)
+foreach (var i in ..3) { <TextBlock Text=/-$"Row {i}"-/ /> }
+foreach (var i in 1..4) { <TextBlock Text=/-$"Item {i}"-/ /> }
+
+// Iterable — reactive when source implements INotifyCollectionChanged
+foreach (var item in items) { <TextBlock Text=/-item-/ /> }
+
+// With key expression (for stable identity across collection changes), source still must implement INotifyCollectionChanged, but will use id as identity in case of collection reset
+foreach (var item in `animals`; `item.Id`) { <TextBlock Text=`item.Name` /> }
+
+// With index variable
+foreach (index; var item in `items`) { <TextBlock Text=`$"{index + 1}. {item}"` /> }
+
+// With both
+foreach (index; var item in `items`; `item.Id`) { <TextBlock Text=`$"{index + 1}. {item}"` /> }
+```
+
+### Root Tag With Properties
+
+`<root>` can carry properties that apply to the class itself (since it inherits from a UI type):
+
+```
+<root Background=`bgBrush.Value` CornerRadius=16 Margin=16 Padding=8 />
+```
+
+## Setup & Bootstrapping
+
+For new project, for WinUI/UWP, when app is initialized, `ReactiveInitializer.InitReactiveScheduler()` must be called to setup reactivity, otherwise reactivity won't work. For other frameworks, you may refer to an example below and adapt for your framework.
+
+```csharp
+// UWP Example
+ReactiveScheduler.AddTickCallbackForCurrentThread(delegate
+{
+    _ = Dispatcher.TryRunAsync(CoreDispatcherPriority.High, ReactiveScheduler.Tick);
+});
+```
+
+## Components
+
+Reusable QuickMarkup components implement one of two interfaces (from `QuickMarkup.WinUI` / `QuickMarkup.UWP`):
+
+- **`IQuickMarkupComponent<T>`** — produces exactly one UI element (its `MarkupNode`). Properties set on the tag that don't exist on the component class are **forwarded** to `MarkupNode`.
+- **`IQuickMarkupFragmentComponent<T>`** — produces multiple UI elements; expands inline at the usage site.
+
+```csharp
+[QuickMarkup("""
+    string Text = "";
+    <root>
+        <TextBlock Text=`Text` FontSize=16 />
+    </root>
+    """)]
+public partial class Label : IQuickMarkupComponent<UIElement>;
+```
+
+Consuming a component:
+
+```csharp
+<Label Text="Hello" HorizontalAlignment=Center />
+```
+
+For WinUI/UWP project with platform specific package installed, Non-generic versions (`IQuickMarkupComponent`, `IQuickMarkupFragmentComponent`) default `T` to `UIElement`.
+
+For many cases, we recommend subclassing elements directly, ie. `partial class MyComponent : Grid`, but for case of sealed elements (ie. WinUI `Border`/`TextBlock` are sealed) or multiple children component/fragment, you may need these.
+
+## Reactivity Infrastructure
+
+For advanced use in C# code-behind (not inside markup):
+
+```csharp
+var r = Ref(0);                     // Reference<int>
+var c = Computed(() => r.Value + 1); // Computed<int>
+r.Watch(val => { ... });            // callback on change
+r.Watch(val => { ... }, immediete: true); // also runs immediately
+Effect(() => { ... }, ref1, ref2);  // runs when any listed ref changes
+```
+
+`ReferenceTracker.NoCapture(() => expr)` reads without tracking dependencies.
+
+## QuickMarkup.WinUI / QuickMarkup.UWP (NuGet Packages)
+
+These packages provide WinUI 3 / UWP helpers that consume QuickMarkup's generated code.
+
+**NuGet packages:** `QuickMarkup.WinUI` (WinUI 3) / `QuickMarkup.UWP` (UWP)
+
+Namespace `QuickMarkup.WinUI`:
+
+- **`ReactiveInitializer.InitReactiveScheduler()`** — call once on the UI thread (e.g., in `MainWindow` constructor) to initialize the reactive scheduler with the current dispatcher.
+- **`ThemeResources.Get<T>(string resourceName)`** — returns a `Reference<T?>` that re-resolves on theme change. Also `Get<T>(string, FrameworkElement)` for per-element theme resolution.
+- **`ThemeBrushes`** — static properties returning `Reference<Brush?>` for common WinUI theme brushes (`Accent`, `PrimaryText`, `SolidBackground`, `CardBackground`, `DividerStroke`, `SystemSuccess`, etc.).
+
+### Initiative And Bootstrapping
+
+The entry page must initialize the reactive scheduler. The simplest way is via `ReactiveInitializer.InitReactiveScheduler()`:
+
+```csharp
+// App.xaml.cs or MainWindow.xaml.cs
+public MainWindow()
+{
+    this.InitializeComponent();
+    QuickMarkup.WinUI.ReactiveInitializer.InitReactiveScheduler();
+    Init();
+}
+```
+
+### Using ThemeResources / ThemeBrushes in Markup
+
+```csharp
+[QuickMarkup("""
+    using QuickMarkup.WinUI;
+    <setup>
+        var theme = UseThemeBrushes(this);
+    </setup>
+    <root Background=`theme.SolidBackground`>
+        <TextBlock Foreground=`theme.PrimaryText` Text="Hello" />
+    </root>
+    """)]
+partial class MyPage : Page
+{
+    public MyPage() { Init(); }
+}
+```
+
+## Best Practices
+
+- Define **global usings** for common namespaces (`QuickMarkup.Infra`, `static QuickMarkup.Infra.QuickRefs`, etc.) so markup stays clean.
+- Define **C# extension methods** like (`CenterH`, `CenterV`, `Center`, `Right`, `Bottom`, `StretchH`, `StretchV`) for layout shortcuts.
+- Define **C# extension properties** (e.g., `IsVisible`, `Grid_Row`, `Grid_Column`) to work around QuickMarkup not supporting attached properties directly.
+- The class must be `partial` (source generator emits the other part). The base class should be a UI element (`Page`, `Grid`, `StackPanel`, etc.).
+
+### `CreateReadOnlyReference` Extension
+
+This bridges `IReadOnlyBinding<T>` (from `Get.UI.Data`) into QuickMarkup's reactivity system:
+
+```csharp
+extension<T>(IReadOnlyBinding<T> prop)
+{
+    public Reference<T> CreateReadOnlyReference()
+    {
+        var r = new Reference<T>(prop.CurrentValue);
+        prop.ValueChanged += (_, val) => r.Value = val;
+        return r;
+    }
+}
+```

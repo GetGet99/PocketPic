@@ -1,0 +1,20 @@
+﻿using DesktopFlyouts;
+
+namespace PicPicker;
+
+[QuickMarkup("""
+    using DesktopFlyouts;
+    <root IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom>
+        <DesktopFlyoutIsland>
+            <GalleryPage Margin=8 MaxWidth=650 MaxHeight=480 />
+        </DesktopFlyoutIsland>
+    </root>
+    """)]
+partial class TopBarIsland : DesktopFlyout
+{
+    public TopBarIsland()
+    {
+        InitializeComponent();
+        Init();
+    }
+}

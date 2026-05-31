@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PicPicker (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "PicPicker (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
