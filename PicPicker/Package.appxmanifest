@@ -6,7 +6,8 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:systemai="http://schemas.microsoft.com/appx/manifest/systemai/windows10"
-  IgnorableNamespaces="uap rescap systemai">
+  xmlns:uap5="http://microsoft.com/5"
+  IgnorableNamespaces="uap rescap systemai uap5">
 
   <Identity
     Name="5ad1cc59-a0c2-499a-9379-c0d26207188e"
@@ -43,6 +44,11 @@
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"  Square71x71Logo="Assets\SmallTile.png" Square310x310Logo="Assets\LargeTile.png"/>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
+		<Extensions>
+			<uap5:Extension Category="windows.startupTask" Executable="PicPicker.exe" EntryPoint="Windows.FullTrustApplication">
+				<uap5:StartupTask TaskId="PicPickerStartupTaskId" Enabled="true" DisplayName="PicPicker" />
+			</uap5:Extension>
+		</Extensions>
     </Application>
   </Applications>
 
