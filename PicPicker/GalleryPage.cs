@@ -51,6 +51,8 @@ public partial class GalleryPage : Grid
     ObservableCollection<string> FilteredImages = new();
     string ImageDirectory => (string)ApplicationData.Current.LocalSettings.Values["ImageDirectory"];
 
+    public void ReloadImages() => LoadImages();
+
     void LoadImages()
     {
         ImageFiles.Clear();

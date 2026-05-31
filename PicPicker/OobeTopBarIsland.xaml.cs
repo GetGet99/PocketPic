@@ -1,4 +1,5 @@
 using DesktopFlyouts;
+using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
@@ -32,6 +33,10 @@ partial class OobeTopBarIsland : DesktopFlyout
 
     public OobeTopBarIsland()
     {
+        if (ApplicationData.Current.LocalSettings.Values.ContainsKey("ImageDirectory"))
+        {
+            SelectedFolder = (string)ApplicationData.Current.LocalSettings.Values["ImageDirectory"];
+        }
         InitializeComponent();
         Init();
     }

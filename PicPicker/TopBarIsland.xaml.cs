@@ -16,6 +16,7 @@ namespace PicPicker;
     """)]
 partial class TopBarIsland : DesktopFlyout
 {
+    public void ReloadImages() => gallery.ReloadImages();
     public TopBarIsland()
     {
         InitializeComponent();

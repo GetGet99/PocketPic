@@ -14,6 +14,7 @@ public partial class App : Application
     TopBarIsland topBarIsland = null!;
     InstructionTopBarIsland instruction = null!;
     DesktopFlyout? activeFlyout;
+    TrayFlyout trayFlyout = null!;
 
     public App()
     {
@@ -26,7 +27,12 @@ public partial class App : Application
 
         _window = new Window();
         MainWindowHandle = WindowNative.GetWindowHandle(_window);
-
+        trayFlyout = new();
+        trayFlyout.Reset += delegate
+        {
+            topBarIsland.Hide();
+            LaunchOOBE();
+        };
         systemTrayIcon = new(
             $"{Package.Current.InstalledLocation.Path}/Assets/icon.ico",
             "PicPicker",
@@ -34,7 +40,7 @@ public partial class App : Application
         );
         systemTrayIcon.Show();
         systemTrayIcon.LeftClicked += OnSystemTrayLeftClicked;
-        ApplicationData.Current.LocalSettings.Values.Remove("ImageDirectory");
+        systemTrayIcon.RightClicked += OnSystemTrayIconRightClicked;
         if (ApplicationData.Current.LocalSettings.Values.ContainsKey("ImageDirectory"))
         {
             topBarIsland = new();
@@ -42,17 +48,29 @@ public partial class App : Application
         }
         else
         {
-            var oobe = new OobeTopBarIsland();
-            instruction = new();
-            oobe.Completed += OnOobeCompleted;
-            activeFlyout = oobe;
-            void r(object sender, RoutedEventArgs e)
-            {
-                oobe.Loaded -= r;
-                oobe.Show();
-            }
-            oobe.Loaded += r;
+            LaunchOOBE();
         }
+    }
+
+    private void OnSystemTrayIconRightClicked(object? sender, MouseEventReceivedEventArgs e)
+    {
+        // only allow right click this after completion
+        if (topBarIsland is not null)
+            trayFlyout.Show(e.Point);
+    }
+
+    public void LaunchOOBE()
+    {
+        var oobe = new OobeTopBarIsland();
+        instruction = new();
+        oobe.Completed += OnOobeCompleted;
+        activeFlyout = oobe;
+        void r(object sender, RoutedEventArgs e)
+        {
+            oobe.Loaded -= r;
+            oobe.Show();
+        }
+        oobe.Loaded += r;
     }
 
     void OnSystemTrayLeftClicked(object? sender, DesktopFlyouts.MouseEventReceivedEventArgs e)
@@ -75,7 +93,10 @@ public partial class App : Application
         instruction.Completed += () =>
         {
             instruction.Hide();
-            topBarIsland = new();
+            if (topBarIsland is null)
+                topBarIsland = new();
+            else
+                topBarIsland.ReloadImages();
             activeFlyout = topBarIsland;
             topBarIsland.Show();
         };
