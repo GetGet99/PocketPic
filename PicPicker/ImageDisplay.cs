@@ -44,7 +44,7 @@ partial class ImageDisplay : IQuickMarkupComponent
             var dataPackage = new DataPackage();
             dataPackage.SetBitmap(
                 RandomAccessStreamReference.CreateFromFile(storageFile));
-
+            dataPackage.RequestedOperation = DataPackageOperation.Copy;
             Clipboard.SetContent(dataPackage);
             Clipboard.Flush();
             Completed?.Invoke();
