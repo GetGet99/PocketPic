@@ -16,6 +16,7 @@ partial class TopBarIsland : DesktopFlyout
     {
         InitializeComponent();
         Init();
+        gallery.Completed += () => Hide();
         gallery.HideParentRequested += () => Hide();
         gallery.ShowParentRequested += () => Show();
     }
