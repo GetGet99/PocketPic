@@ -64,8 +64,16 @@ public partial class App : Application
     {
         ApplicationData.Current.LocalSettings.Values["ImageDirectory"] = path;
         activeFlyout?.Hide();
-        topBarIsland = new();
-        activeFlyout = topBarIsland;
-        topBarIsland.Show();
+
+        var instruction = new InstructionTopBarIsland();
+        instruction.Completed += () =>
+        {
+            instruction.Hide();
+            topBarIsland = new();
+            activeFlyout = topBarIsland;
+            topBarIsland.Show();
+        };
+        activeFlyout = instruction;
+        instruction.Show();
     }
 }

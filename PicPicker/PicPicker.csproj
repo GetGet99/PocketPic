@@ -22,6 +22,7 @@
     <None Remove="Get.Layout\VStack.xaml" />
     <None Remove="TopBarIsland.xaml" />
     <None Remove="OobeTopBarIsland.xaml" />
+    <None Remove="InstructionTopBarIsland.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,10 +56,16 @@
     <None Update="Assets\icon.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Assets\trayicon.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Page Update="TopBarIsland.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="OobeTopBarIsland.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="InstructionTopBarIsland.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Get.Layout\Card.xaml">
