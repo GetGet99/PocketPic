@@ -156,10 +156,10 @@ public partial class GalleryPage : Grid
             };
             void r(object sender, RoutedEventArgs e)
             {
-                flyout.Loaded -= r;
-                flyout.Show();
+                flyout.MarkupNode.Loaded -= r;
+                flyout.MarkupNode.Show();
             }
-            flyout.Loaded += r;
+            flyout.MarkupNode.Loaded += r;
         }
         catch { }
     }

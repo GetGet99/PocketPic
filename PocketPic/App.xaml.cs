@@ -1,8 +1,6 @@
 ﻿using DesktopFlyouts;
 using System.Diagnostics;
-using Windows.Graphics;
 using Windows.Storage;
-using Windows.UI.Popups;
 using WinRT.Interop;
 
 namespace PocketPic;
@@ -32,7 +30,7 @@ public partial class App : Application
         trayFlyout = new();
         trayFlyout.Reset += delegate
         {
-            topBarIsland.Hide();
+            topBarIsland.MarkupNode.Hide();
             LaunchOOBE();
         };
         systemTrayIcon = new(
@@ -46,7 +44,7 @@ public partial class App : Application
         if (ApplicationData.Current.LocalSettings.Values.ContainsKey("ImageDirectory"))
         {
             topBarIsland = new();
-            activeFlyout = topBarIsland;
+            activeFlyout = topBarIsland.MarkupNode;
         }
         else
         {
@@ -58,7 +56,7 @@ public partial class App : Application
     {
         // only allow right click this after completion
         if (topBarIsland is not null)
-            trayFlyout.Show(e.Point);
+            trayFlyout.MarkupNode.Show(e.Point);
     }
 
     public void LaunchOOBE()
@@ -66,13 +64,13 @@ public partial class App : Application
         var oobe = new OobeTopBarIsland();
         instruction = new();
         oobe.Completed += OnOobeCompleted;
-        activeFlyout = oobe;
+        activeFlyout = oobe.MarkupNode;
         void r(object sender, RoutedEventArgs e)
         {
-            oobe.Loaded -= r;
-            oobe.Show();
+            oobe.MarkupNode.Loaded -= r;
+            oobe.MarkupNode.Show();
         }
-        oobe.Loaded += r;
+        oobe.MarkupNode.Loaded += r;
     }
 
     void OnSystemTrayLeftClicked(object? sender, DesktopFlyouts.MouseEventReceivedEventArgs e)
@@ -95,16 +93,16 @@ public partial class App : Application
         EnableStartup();
         instruction.Completed += () =>
         {
-            instruction.Hide();
+            instruction.MarkupNode.Hide();
             if (topBarIsland is null)
                 topBarIsland = new();
             else
                 topBarIsland.ReloadImages();
-            activeFlyout = topBarIsland;
-            topBarIsland.Show();
+            activeFlyout = topBarIsland.MarkupNode;
+            topBarIsland.MarkupNode.Show();
         };
-        activeFlyout = instruction;
-        instruction.Show();
+        activeFlyout = instruction.MarkupNode;
+        instruction.MarkupNode.Show();
     }
     async void EnableStartup()
     {

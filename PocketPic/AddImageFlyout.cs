@@ -1,5 +1,4 @@
 using DesktopFlyouts;
-using Microsoft.UI.Xaml.Automation;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
@@ -12,31 +11,34 @@ namespace PocketPic;
     bool CanSave => `!string.IsNullOrWhiteSpace(NewImageName) && NewImageExtension is { Length: > 1 } && NewImageExtension.StartsWith('.')`;
     ImageSource PreviewImage;
 
-    <root IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom
-        ActivationMode=NoActivateOnOpen // we will do this manually
-    >
-        <DesktopFlyoutIsland>
-            <Grid ColumnDefinitions=<>
-                <ColumnDefinition Width=Auto />
-                <ColumnDefinition Width=`new GridLength(1, GridUnitType.Star)` />
-            </> Margin=16 ColumnSpacing=16>
-                <Image Grid.Column=0 Source=`PreviewImage` Width=200 Height=200 Stretch=Uniform />
-                <StackPanel Grid.Column=1 Spacing=8 VerticalAlignment=Center>
-                    <TextBlock Text="Save image from clipboard:" />
-                    <StackPanel Orientation=Horizontal Spacing=4>
-                        nameInput = <TextBox PlaceholderText="Image name" Text<=>`NewImageName` MinWidth=170 />
-                        <TextBox PlaceholderText=".ext" Text<=>`NewImageExtension` Width=60 />
+    <root>
+        <DesktopFlyout
+            IsBackdropEnabled BackdropKind=DesktopAcrylic Placement=TopCenter !HideOnLostFocus PopupDirection=TopToBottom
+            ActivationMode=NoActivateOnOpen // we will do this manually
+        >
+            <DesktopFlyoutIsland>
+                <Grid ColumnDefinitions=<>
+                    <ColumnDefinition Width=Auto />
+                    <ColumnDefinition Width=`new GridLength(1, GridUnitType.Star)` />
+                </> Margin=16 ColumnSpacing=16>
+                    <Image Grid.Column=0 Source=`PreviewImage` Width=200 Height=200 Stretch=Uniform />
+                    <StackPanel Grid.Column=1 Spacing=8 VerticalAlignment=Center>
+                        <TextBlock Text="Save image from clipboard:" />
+                        <StackPanel Orientation=Horizontal Spacing=4>
+                            nameInput = <TextBox PlaceholderText="Image name" Text<=>`NewImageName` MinWidth=170 />
+                            <TextBox PlaceholderText=".ext" Text<=>`NewImageExtension` Width=60 />
+                        </StackPanel>
+                        <StackPanel Orientation=Horizontal HorizontalAlignment=Right Spacing=8>
+                            <Button Content="Cancel" @Click+=`Cancel()` />
+                            <Button Content="Save" @Click+=`SaveImage()` IsEnabled=`CanSave` />
+                        </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation=Horizontal HorizontalAlignment=Right Spacing=8>
-                        <Button Content="Cancel" @Click+=`Cancel()` />
-                        <Button Content="Save" @Click+=`SaveImage()` IsEnabled=`CanSave` />
-                    </StackPanel>
-                </StackPanel>
-            </Grid>
-        </DesktopFlyoutIsland>
+                </Grid>
+            </DesktopFlyoutIsland>
+        </DesktopFlyout>
     </root>
     """)]
-partial class AddImageFlyout : DesktopFlyout
+partial class AddImageFlyout : IQuickMarkupComponent<DesktopFlyout>
 {
     readonly byte[] _imageData;
     public event Action? Completed;
@@ -45,9 +47,8 @@ partial class AddImageFlyout : DesktopFlyout
     {
         _imageData = imageData;
         NewImageExtension = fileExtension;
-        InitializeComponent();
         Init();
-        Loaded += (s, e) => nameInput.Focus(FocusState.Programmatic);
+        MarkupNode.Loaded += (s, e) => nameInput.Focus(FocusState.Programmatic);
         LoadPreview();
     }
 
@@ -67,7 +68,7 @@ partial class AddImageFlyout : DesktopFlyout
 
     void Cancel()
     {
-        Hide();
+        MarkupNode.Hide();
         Completed?.Invoke();
     }
 
@@ -91,7 +92,7 @@ partial class AddImageFlyout : DesktopFlyout
 
             await File.WriteAllBytesAsync(targetPath, _imageData);
 
-            Hide();
+            MarkupNode.Hide();
             Completed?.Invoke();
         }
         catch { }
