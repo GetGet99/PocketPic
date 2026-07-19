@@ -1,0 +1,10 @@
+{
+  "background_color": "#ffffff",
+  "description": "PocketPic.Uno",
+  "display": "standalone",
+  "name": "PocketPic.Uno",
+  "short_name": "PocketPic.Uno",
+  "start_url": "/index.html",
+  "theme_color": "#ffffff",
+  "scope": "/"
+}
