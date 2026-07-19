@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Dispatching;
+﻿#if WINODWS
+using Microsoft.UI.Dispatching;
 using Microsoft.Windows.AppLifecycle;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,3 +70,4 @@ public static class Program
         }
     }
 }
+#endif

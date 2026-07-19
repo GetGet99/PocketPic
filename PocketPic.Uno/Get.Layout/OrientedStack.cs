@@ -42,11 +42,21 @@ public partial class OrientedStack : Panel
     public static bool GetVisibilityTracking(DependencyObject obj) => (bool)obj.GetValue(VisibilityTrackingProperty);
     public static void SetVisibilityTracking(DependencyObject obj, bool value) => obj.SetValue(VisibilityTrackingProperty, value);
 
-    [GeneratedDependencyProperty]
-    public partial Orientation Orientation { get; set; }
-    [GeneratedDependencyProperty]
-    public partial double Spacing { get; set; }
-    partial void OnOrientationChanged(Orientation newValue)
+    public Orientation Orientation { get => (Orientation)GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
+    public static DependencyProperty OrientationProperty {get;} = DependencyProperty.Register(
+        nameof(Orientation),
+        typeof(Orientation),
+        typeof(OrientedStack),
+        new(default(Orientation), (d, e) => ((OrientedStack)d).OnOrientationChanged((Orientation)e.NewValue))
+    );
+    public double Spacing { get => (double)GetValue(SpacingProperty); set => SetValue(SpacingProperty, value); }
+    public static DependencyProperty SpacingProperty {get;}= DependencyProperty.Register(
+        nameof(Spacing),
+        typeof(double),
+        typeof(OrientedStack),
+        new(0d)
+    );
+    void OnOrientationChanged(Orientation newValue)
     {
         InvalidateArrange();
         InvalidateMeasure();

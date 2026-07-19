@@ -7,16 +7,19 @@
     <UnoSingleProject>true</UnoSingleProject>
 
     <!-- Display name -->
-    <ApplicationTitle>PocketPic.Uno</ApplicationTitle>
+    <ApplicationTitle>PocketPic</ApplicationTitle>
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.pocketpic-uno</ApplicationId>
+    <ApplicationId>com.getget99.pocketpic</ApplicationId>
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <!-- Package Publisher -->
-    <ApplicationPublisher>PocketPic.Uno</ApplicationPublisher>
+    <ApplicationPublisher>PocketPic</ApplicationPublisher>
     <!-- Package Description -->
-    <Description>PocketPic.Uno powered by Uno Platform.</Description>
+    <Description>PocketPic powered by Uno Platform.</Description>
+
+
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 
     <!--
       UnoFeatures are used to quickly add and manage features enabled for your app.

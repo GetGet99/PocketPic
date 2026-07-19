@@ -4,10 +4,15 @@ namespace Get.Layout;
 
 public partial class Card : Control
 {
-    [GeneratedDependencyProperty]
-    public partial UIElement Child { get; set; }
+    public UIElement? Child { get => GetValue(ChildProperty) as UIElement; set => SetValue(ChildProperty, value); }
+    public static DependencyProperty ChildProperty = DependencyProperty.Register(
+        nameof(Child),
+        typeof(UIElement),
+        typeof(Card),
+        new(null)
+    );
     public Card()
     {
-        
+        InitializeComponent();
     }
 }
