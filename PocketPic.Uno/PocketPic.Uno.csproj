@@ -25,5 +25,9 @@
       SkiaRenderer;
     </UnoFeatures>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="QuickMarkup.Uno" />
+    <PackageReference Include="Get.DesktopFlyouts.Uno" />
+  </ItemGroup>
 
 </Project>

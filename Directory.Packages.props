@@ -6,5 +6,7 @@
     See https://aka.platform.uno/using-uno-sdk#implicit-packages for more information regarding the Implicit Packages.
   -->
   <ItemGroup>
+    <PackageVersion Include="QuickMarkup.Uno" Version="0.1.17" />
+    <PackageVersion Include="Get.DesktopFlyouts.Uno" Version="1.4.0" />
   </ItemGroup>
 </Project>
