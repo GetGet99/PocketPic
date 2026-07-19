@@ -34,9 +34,16 @@ public partial class App : Application
             LaunchOOBE();
         };
         systemTrayIcon = new(
-            $"{Package.Current.InstalledLocation.Path}/Assets/icon.ico",
+            $"{Package.Current.InstalledLocation.Path}/Assets/"+ 
+#if WINDOWS
+            "icon.ico"
+#else
+            "Assets/Icons/icon_foreground.svg"
+#endif
+            ,
             "PocketPic",
-            Guid.Parse("150b459a-c062-4db6-9750-6dce3ab19462")
+            "com.getget99.pocketpic"
+            // Guid.Parse("150b459a-c062-4db6-9750-6dce3ab19462")
         );
         systemTrayIcon.Show();
         systemTrayIcon.LeftClicked += OnSystemTrayLeftClicked;
@@ -106,6 +113,7 @@ public partial class App : Application
     }
     async void EnableStartup()
     {
+#if WINDOWS
         var startupTask = await StartupTask.GetAsync("PocketPicStartupTaskId"); // Pass the task ID you specified in the appxmanifest file
         switch (startupTask.State)
         {
@@ -118,5 +126,6 @@ public partial class App : Application
             case StartupTaskState.Enabled:
                 break;
         }
+#endif
     }
 }

@@ -134,9 +134,9 @@ public class MouseEventReceivedEventArgs : EventArgs
     /// Gets the screen point associated with the mouse event.
     /// </summary>
     /// <value>The screen point in physical pixels.</value>
-    public Point Point { get; }
+    public System.Drawing.Point Point { get; }
 
-    internal MouseEventReceivedEventArgs(Point point)
+    internal MouseEventReceivedEventArgs(System.Drawing.Point point)
     {
         Point = point;
     }
