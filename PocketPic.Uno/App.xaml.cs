@@ -42,8 +42,11 @@ public partial class App : Application
 #endif
             ,
             "PocketPic",
+#if WINDOWS
+            Guid.Parse("150b459a-c062-4db6-9750-6dce3ab19462")
+#else
             "com.getget99.pocketpic"
-            // Guid.Parse("150b459a-c062-4db6-9750-6dce3ab19462")
+#endif
         );
         systemTrayIcon.Show();
         systemTrayIcon.LeftClicked += OnSystemTrayLeftClicked;
