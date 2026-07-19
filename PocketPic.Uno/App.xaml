@@ -11,7 +11,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <Style x:Key="DefaultWindows11DesktopFlyoutStyle" TargetType="lib:DesktopFlyout">
+            <!-- <Style x:Key="DefaultWindows11DesktopFlyoutStyle" TargetType="lib:DesktopFlyout">
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="VerticalAlignment" Value="Bottom" />
                 <Setter Property="Margin" Value="12" />
@@ -39,7 +39,7 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
-            </Style>
+            </Style> -->
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -38,7 +38,7 @@ public partial class App : Application
 #if WINDOWS
             "icon.ico"
 #else
-            "Assets/Icons/icon_foreground.svg"
+            "icon_foreground.svg.icon"
 #endif
             ,
             "PocketPic",
