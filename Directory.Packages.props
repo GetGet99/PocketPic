@@ -7,8 +7,8 @@
   -->
   <ItemGroup>
     <PackageVersion Include="QuickMarkup.Uno" Version="0.1.17" />
-    <PackageVersion Include="Get.DesktopFlyouts.Uno" Version="1.4.0" />
-    <PackageVersion Include="DesktopFlyouts.WinUI" Version="1.4.0-beta1" />
+    <PackageVersion Include="Get.DesktopFlyouts.Uno" Version="1.4.0-beta1" />
+    <PackageVersion Include="DesktopFlyouts.WinUI" Version="1.4.0" />
     <PackageVersion Include="Olbrasoft.SystemTray.Linux" Version="1.1.15" />
   </ItemGroup>
 </Project>
