@@ -15,6 +15,7 @@
     <ApplicationVersion>1</ApplicationVersion>
     <!-- Package Publisher -->
     <ApplicationPublisher>PocketPic</ApplicationPublisher>
+    <DefaultNamespace>PocketPic</DefaultNamespace>
     <!-- Package Description -->
     <Description>PocketPic powered by Uno Platform.</Description>
 

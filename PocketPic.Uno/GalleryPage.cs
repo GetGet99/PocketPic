@@ -119,14 +119,12 @@ public partial class GalleryPage : Grid
                 }
             }
 
-            if (imageData == null && dataView.Contains("PNG"))
+            if (imageData == null && dataView.Contains(StandardDataFormats.Png))
             {
-                var item = await dataView.GetDataAsync("PNG");
-                if (item is IRandomAccessStream pngStream)
+                var bytes = await dataView.GetPngAsync();
+                if (bytes is not null)
                 {
-                    using var memStream = new MemoryStream();
-                    await pngStream.AsStream().CopyToAsync(memStream);
-                    imageData = memStream.ToArray();
+                    imageData = bytes;
                     fileExt = ".png";
                 }
             }

@@ -1,4 +1,7 @@
 using System.Diagnostics;
+#if HAS_UNO
+using Uno.Extensions;
+#endif
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -78,21 +81,57 @@ partial class ImageDisplay : IQuickMarkupComponent
         try
         {
             var storageFile = await StorageFile.GetFileFromPathAsync(path);
+#if WINDOWS
             var streamRef = RandomAccessStreamReference.CreateFromFile(storageFile);
+#endif
 
             var dataPackage = new DataPackage();
+            var ext = System.IO.Path.GetExtension(path).ToLower();
+#if WINDOWS
             dataPackage.SetBitmap(streamRef);
             dataPackage.SetStorageItems(new[] { storageFile });
 
-            var ext = System.IO.Path.GetExtension(path).ToLower();
             if (ext is ".png")
                 dataPackage.SetData("PNG", streamRef);
             else if (ext is ".gif")
                 dataPackage.SetData("GIF", streamRef);
+#else
+            // dataPackage.SetStorageItems(new[] { storageFile });
+            var uri = new Uri(storageFile.Path).AbsoluteUri;
+            var listBytes = System.Text.Encoding.UTF8.GetBytes(uri + "\r\n");
+            dataPackage.SetData("text/uri-list", listBytes);
+            
+            var stream = await storageFile.OpenReadAsync();
+            var bytes = await stream.ReadBytesAsync(CancellationToken.None);
+            string? mimeType = ext switch
+            {
+                ".png"         => "image/png",
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".gif"         => "image/gif",
+                ".bmp"         => "image/bmp",
+                ".webp"        => "image/webp",
+                ".svg"         => "image/svg+xml",
+                ".tif" or ".tiff" => "image/tiff",
+                ".ico"         => "image/x-icon",
+                ".avif"        => "image/avif",
+                ".heic"        => "image/heic",
+                ".heif"        => "image/heif",
+                _ => null
+            };
 
+            if (mimeType is not null)
+            {
+                dataPackage.SetData(mimeType, bytes);
+            }
+#endif
             dataPackage.RequestedOperation = DataPackageOperation.Copy;
+#if WINDOWS
             Clipboard.SetContent(dataPackage);
             Clipboard.Flush();
+#else
+            LinuxClipboard.SetContent(dataPackage);
+            LinuxClipboard.Flush();
+#endif
             Completed?.Invoke();
         }
         catch (Exception ex)
