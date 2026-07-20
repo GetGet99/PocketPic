@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Windows.Storage;
 using WinRT.Interop;
+using Path = System.IO.Path;
 
 namespace PocketPic;
 
@@ -128,6 +129,64 @@ public partial class App : Application
             case StartupTaskState.DisabledByPolicy:
             case StartupTaskState.Enabled:
                 break;
+        }
+#else
+        try
+        {
+            // 1. Locate the XDG autostart directory (~/.config/autostart)
+            string homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string autostartDir = Path.Combine(homeDir, ".config", "autostart");
+            
+            if (!Directory.Exists(autostartDir))
+            {
+                Directory.CreateDirectory(autostartDir);
+            }
+
+            string desktopFilePath = Path.Combine(autostartDir, "PocketPic.desktop");
+
+            // 2. Resolve paths dynamically based on runtime context
+            string execPath;
+            
+            // Check if running as a self-contained single file binary or via dotnet muxer
+            string? currentProcess = Environment.ProcessPath; 
+            
+            if (Path.GetFileName(currentProcess) == "dotnet")
+            {
+                // Fallback for execution via 'dotnet App.dll' during debug/development
+                string dllPath = AppContext.BaseDirectory;
+                string dllName = "PocketPic.Uno.dll";
+                execPath = $"dotnet {Path.Combine(dllPath, dllName)} --startup";
+            }
+            else
+            {
+                // Production execution path (Self-contained binary, Flatpak, or Snap run)
+                execPath = $"\"{currentProcess}\" --startup";
+            }
+
+            // Dynamically locate your icon assets folder path relative to the binary
+            string iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "icon_foreground.png");
+
+            // 3. Draft the sanitized XDG standard config payload
+            string desktopContent = $"""
+            [Desktop Entry]
+            Type=Application
+            Name=PocketPic
+            GenericName=Top of screen picture picker
+            Comment=Launches PocketPic on system boot
+            Exec={execPath}
+            Icon={iconPath}
+            Terminal=false
+            StartupNotify=true
+            X-GNOME-Autostart-enabled=true
+            """;
+
+            // 4. Safely commit payload changes asynchronously to local disk storage
+            await File.WriteAllTextAsync(desktopFilePath, desktopContent);
+            Debug.WriteLine("Linux autostart shortcut registered successfully.");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Failed to write Linux startup entry: {ex.Message}");
         }
 #endif
     }
