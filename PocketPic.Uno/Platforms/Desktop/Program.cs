@@ -12,7 +12,7 @@ internal class Program
 
         if (launchedFromStartup)
         {
-            Thread.Sleep(5000);
+            Thread.Sleep(10000);
         }
         // App.InitializeLogging();
 
